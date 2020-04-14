@@ -27,6 +27,7 @@ void cycle_memory();
 void eval_bus_drivers();
 void drive_bus();
 void latch_datapath_values();
+int checkExc();
 
 /***************************************************************/
 /* A couple of useful definitions.                             */
@@ -710,7 +711,7 @@ void eval_micro_sequencer() {
             nextState = GetJ(getUcode()) | ((CURRENT_LATCHES.IR & 0x0800) >> 11);
             break;
         case CINT:
-            nextState - GetJ(getUcode()) | (INT << 3);
+            nextState = GetJ(getUcode()) | (INT << 3);
             INT = 0;
             break;
         default:
@@ -804,9 +805,9 @@ void eval_bus_drivers() {
     GatePC2In = CURRENT_LATCHES.PC - 2;
 
     GatePSRIn = (CURRENT_LATCHES.PRIV << 15) + (CURRENT_LATCHES.N << 2)
-        + (CURRENT_LATCHES.Z << 1) + (CURRENT_LATCHES.P << 1);
+        + (CURRENT_LATCHES.Z << 1) + (CURRENT_LATCHES.P);
 
-    GateVECIn = CURRENT_LATCHES.VEC << 1;
+    GateVECIn = (0x02 << 8) | (CURRENT_LATCHES.VEC << 1);
 
     //GateMDR
     if(GetDATA_SIZE(getUcode())){
@@ -1043,7 +1044,7 @@ void latch_datapath_values() {
 
     //VEC
     if(GetLD_VEC(getUcode())){
-        NEXT_LATCHES.VEC = (GetLD_VEC(getUcode())) ? EXCV : 0x01;
+        NEXT_LATCHES.VEC = (GetVECMUX(getUcode())) ? EXCV : 0x01;
     }
 
     //USP
